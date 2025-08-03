@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<!-- saved from url=(0027)file:///E:/Desktop/222.html -->
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>森林碳储量变化分析 (1985-2025)</title>
+    <script src="./森林碳储量变化分析 (1985-2025)_files/echarts.min.js.下载"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
+            color: #2c3e50;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 6px 18px rgba(0, 100, 150, 0.1);
+            border-bottom: 4px solid #4e79a7;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4e79a7, #91cc75, #fac858, #ee6666);
+        }
+        
+        h1 {
+            font-size: 2.6rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #2c3e50, #4e79a7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #5a7d9a;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 30px rgba(0, 60, 120, 0.1);
+            height: 600px;
+            transition: transform 0.3s;
+        }
+        
+        .chart-container:hover {
+            transform: translateY(-5px);
+        }
+        
+        .summary-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 60, 120, 0.08);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 80, 150, 0.12);
+        }
+        
+        .card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eaeff5;
+        }
+        
+        .card h3 i {
+            margin-right: 10px;
+            font-size: 1.4rem;
+            width: 30px;
+            height: 30px;
+            background: #e3f2fd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .stat-item {
+            padding: 12px;
+            border-radius: 10px;
+            background: #f8fafd;
+            border: 1px solid #e6f0f7;
+            transition: all 0.3s;
+        }
+        
+        .stat-item:hover {
+            background: #e6f7ff;
+            border-color: #b3e0ff;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #5a7d9a;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .stat-change {
+            font-size: 0.85rem;
+            margin-top: 3px;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+        
+        .positive {
+            color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        .negative {
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        .data-table-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 30px rgba(0, 60, 120, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .data-table-container h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eaeff5;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        th {
+            background-color: #4e79a7;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+        }
+        
+        td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9fbfd;
+        }
+        
+        tr:hover {
+            background-color: #f0f9ff;
+        }
+        
+        .total-row {
+            font-weight: 700;
+            background-color: #e6f7ff !important;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #5a7d9a;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+        
+        #main {
+            width: 100%;
+            height: 500px;
+        }
+        
+        .highlights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .highlight-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 60, 120, 0.08);
+            border-left: 4px solid #4e79a7;
+            transition: all 0.3s;
+        }
+        
+        .highlight-card:hover {
+            box-shadow: 0 8px 20px rgba(0, 80, 150, 0.12);
+            transform: translateY(-3px);
+        }
+        
+        .highlight-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            font-size: 1.3rem;
+        }
+        
+        .highlight-content {
+            color: #4a6572;
+            line-height: 1.7;
+        }
+        
+        .highlight-content p {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .highlight-content p:before {
+            content: "•";
+            margin-right: 8px;
+            color: #4e79a7;
+            font-weight: bold;
+        }
+        
+        .icon {
+            display: inline-block;
+            width: 36px;
+            height: 36px;
+            background: #e3f2fd;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 36px;
+            margin-right: 10px;
+            color: #4e79a7;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .trend-indicator {
+            display: inline-block;
+            margin-left: 5px;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 900px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>森林生态系统碳储量变化分析</h1>
+            <p class="subtitle">1985-2025年间碳储量及其组分的动态变化趋势分析（单位：吨/公顷）</p>
+        </header>
+        
+        <div class="highlights">
+            <div class="highlight-card">
+                <h3><span class="icon">1</span>主要发现</h3>
+                <div class="highlight-content">
+                    <p>碳储量整体呈现增长趋势，2025年达到峰值228.44吨/公顷</p>
+                    <p>土壤碳库(C_soil)始终是主要组成部分，占比超过85%</p>
+                    <p>地上碳库(C_above)增长最显著，40年间增长189%</p>
+                    <p>死亡有机物(C_dead)整体呈下降趋势，2025年达到最低值</p>
+                </div>
+            </div>
+            
+            <div class="highlight-card">
+                <h3><span class="icon">2</span>数据洞察</h3>
+                <div class="highlight-content">
+                    <p>1995-2001年是碳储量增长最快的时期，增加2.39吨/公顷</p>
+                    <p>2016年出现轻微下降，主要是土壤碳库减少所致</p>
+                    <p>地上碳库持续增长，反映森林生物量增加</p>
+                    <p>土壤碳库波动可能与气候因素和土地利用变化有关</p>
+                </div>
+            </div>
+            
+            <div class="highlight-card">
+                <h3><span class="icon">3</span>分析结论</h3>
+                <div class="highlight-content">
+                    <p>森林成熟度提高导致地上生物量持续增加</p>
+                    <p>土壤碳库的稳定性对总体碳储量至关重要</p>
+                    <p>碳汇管理应重点关注地上碳库的增长潜力</p>
+                    <p>需要进一步研究死亡有机物减少的原因</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard">
+            <div class="chart-container">
+                <div id="main" _echarts_instance_="ec_1754224994259" style="user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); position: relative;"><div style="position: relative; width: 775px; height: 500px; padding: 0px; margin: 0px; border-width: 0px; cursor: default;"><canvas data-zr-dom-id="zr_0" width="1162" height="750" style="position: absolute; left: 0px; top: 0px; width: 775px; height: 500px; user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); padding: 0px; margin: 0px; border-width: 0px;"></canvas></div><div class="" style="position: absolute; display: block; border-style: solid; white-space: nowrap; z-index: 9999999; box-shadow: rgba(0, 0, 0, 0.2) 1px 2px 10px; transition: opacity 0.2s cubic-bezier(0.23, 1, 0.32, 1), visibility 0.2s cubic-bezier(0.23, 1, 0.32, 1), transform 0.4s cubic-bezier(0.23, 1, 0.32, 1); background-color: rgba(255, 255, 255, 0.95); border-width: 1px; border-radius: 4px; color: rgb(74, 101, 114); font: 14px / 21px &quot;Microsoft YaHei&quot;; padding: 15px; top: 0px; left: 0px; transform: translate3d(196px, 111px, 0px); border-color: rgb(230, 240, 247); pointer-events: none; visibility: hidden; opacity: 0;"><div style="font-size:16px;font-weight:bold;color:#2c3e50;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #eaeff5">1985年碳储量分析</div><div style="display:flex;justify-content:space-between;margin:10px 0;align-items:center;">
+                        <div style="display:flex;align-items:center;">
+                            <div style="width:12px;height:12px;border-radius:50%;background:#c23531;margin-right:8px;"></div>
+                            <span>总碳储量：</span>
+                        </div>
+                        <span style="font-weight:bold;font-size:16px;">149.77 吨/公顷</span>
+                    </div><div style="display:flex;justify-content:space-between;margin:10px 0;align-items:center;">
+                                <div style="display:flex;align-items:center;">
+                                    <div style="width:12px;height:12px;border-radius:2px;background:[object Object];margin-right:8px;"></div>
+                                    <span>地上碳库：</span>
+                                </div>
+                                <div>
+                                    <span style="font-weight:500;">4.26 吨/公顷</span>
+                                    <span style="font-size:0.9em;background:#f0f7ff;padding:2px 8px;border-radius:10px;margin-left:8px;">2.8%</span>
+                                </div>
+                            </div><div style="display:flex;justify-content:space-between;margin:10px 0;align-items:center;">
+                                <div style="display:flex;align-items:center;">
+                                    <div style="width:12px;height:12px;border-radius:2px;background:[object Object];margin-right:8px;"></div>
+                                    <span>地下碳库：</span>
+                                </div>
+                                <div>
+                                    <span style="font-weight:500;">2.46 吨/公顷</span>
+                                    <span style="font-size:0.9em;background:#f0f7ff;padding:2px 8px;border-radius:10px;margin-left:8px;">1.6%</span>
+                                </div>
+                            </div><div style="display:flex;justify-content:space-between;margin:10px 0;align-items:center;">
+                                <div style="display:flex;align-items:center;">
+                                    <div style="width:12px;height:12px;border-radius:2px;background:[object Object];margin-right:8px;"></div>
+                                    <span>土壤碳库：</span>
+                                </div>
+                                <div>
+                                    <span style="font-weight:500;">140.94 吨/公顷</span>
+                                    <span style="font-size:0.9em;background:#f0f7ff;padding:2px 8px;border-radius:10px;margin-left:8px;">94.1%</span>
+                                </div>
+                            </div><div style="display:flex;justify-content:space-between;margin:10px 0;align-items:center;">
+                                <div style="display:flex;align-items:center;">
+                                    <div style="width:12px;height:12px;border-radius:2px;background:[object Object];margin-right:8px;"></div>
+                                    <span>死亡有机物：</span>
+                                </div>
+                                <div>
+                                    <span style="font-weight:500;">2.1 吨/公顷</span>
+                                    <span style="font-size:0.9em;background:#f0f7ff;padding:2px 8px;border-radius:10px;margin-left:8px;">1.4%</span>
+                                </div>
+                            </div></div></div>
+            </div>
+            
+            <div class="summary-cards">
+                <div class="card">
+                    <h3><i>📊</i> 总体变化趋势</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">1985年基准</div>
+                            <div class="stat-value">149.77</div>
+                            <div class="stat-label">吨/公顷</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">2025年当前</div>
+                            <div class="stat-value">228.44</div>
+                            <div class="stat-change positive">+52.5%</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">年均增长率</div>
+                            <div class="stat-value">1.96</div>
+                            <div class="stat-label">吨/年</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">最大年增量</div>
+                            <div class="stat-value">73.91</div>
+                            <div class="stat-label">(1985-1995)</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3><i>🌳</i> 组分占比分析</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">土壤碳库占比</div>
+                            <div class="stat-value">91.4%</div>
+                            <div class="stat-change">(2025年)</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">地上碳库占比</div>
+                            <div class="stat-value">5.4%</div>
+                            <div class="stat-change positive">+189%</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">地下碳库占比</div>
+                            <div class="stat-value">2.7%</div>
+                            <div class="stat-change positive">+149%</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">死亡有机物</div>
+                            <div class="stat-value">0.5%</div>
+                            <div class="stat-change negative">-44%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3><i>📈</i> 关键变化点</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">最大增长期</div>
+                            <div class="stat-value">1985-1995</div>
+                            <div class="stat-change positive">+73.91</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">唯一下降期</div>
+                            <div class="stat-value">2011-2016</div>
+                            <div class="stat-change negative">-15.45</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">最稳定组分</div>
+                            <div class="stat-value">C_dead</div>
+                            <div class="stat-label">波动最小</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">增长最快组分</div>
+                            <div class="stat-value">C_above</div>
+                            <div class="stat-change positive">+189%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="data-table-container">
+            <h2>碳储量详细数据表 (1985-2025)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>指标</th>
+                        <th>1985</th>
+                        <th>1995</th>
+                        <th>2001</th>
+                        <th>2016</th>
+                        <th>2025</th>
+                        <th>变化趋势</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="total-row">
+                        <td><strong>总碳储量</strong></td>
+                        <td>149.77</td>
+                        <td>223.68</td>
+                        <td>226.07</td>
+                        <td>210.62</td>
+                        <td>228.44</td>
+                        <td><span class="positive">↑ 52.5%</span></td>
+                    </tr>
+                    <tr>
+                        <td>地上碳库 (C_above)</td>
+                        <td>4.26</td>
+                        <td>7.71</td>
+                        <td>10.58</td>
+                        <td>10.42</td>
+                        <td>12.33</td>
+                        <td><span class="positive">↑ 189%</span></td>
+                    </tr>
+                    <tr>
+                        <td>地下碳库 (C_below)</td>
+                        <td>2.46</td>
+                        <td>3.92</td>
+                        <td>5.29</td>
+                        <td>5.32</td>
+                        <td>6.13</td>
+                        <td><span class="positive">↑ 149%</span></td>
+                    </tr>
+                    <tr>
+                        <td>土壤碳库 (C_soil)</td>
+                        <td>140.94</td>
+                        <td>210.62</td>
+                        <td>208.95</td>
+                        <td>193.36</td>
+                        <td>208.82</td>
+                        <td><span class="positive">↑ 48.1%</span></td>
+                    </tr>
+                    <tr>
+                        <td>死亡有机物 (C_dead)</td>
+                        <td>2.10</td>
+                        <td>1.43</td>
+                        <td>1.26</td>
+                        <td>1.52</td>
+                        <td>1.17</td>
+                        <td><span class="negative">↓ 44.3%</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <footer>
+            <p>数据来源：森林生态系统碳储量监测报告 | 可视化分析 © 2023</p>
+            <p>注：所有数值单位为吨/公顷，保留两位小数 | 趋势计算基于1985-2025年数据</p>
+        </footer>
+    </div>
+
+    <script>
+        // 初始化图表
+        const chartDom = document.getElementById('main');
+        const myChart = echarts.init(chartDom);
+        
+        // 数据准备
+        const years = ['1985', '1995', '2001', '2016', '2025'];
+        const carbonStocks = [149.77, 223.68, 226.07, 210.62, 228.44];
+        const C_above = [4.26, 7.71, 10.58, 10.42, 12.33];
+        const C_below = [2.46, 3.92, 5.29, 5.32, 6.13];
+        const C_soil = [140.94, 210.62, 208.95, 193.36, 208.82];
+        const C_dead = [2.10, 1.43, 1.26, 1.52, 1.17];
+        
+        // 计算各组分占比
+        const percent_C_above = C_above.map((val, idx) => (val / carbonStocks[idx] * 100).toFixed(1) + '%');
+        const percent_C_below = C_below.map((val, idx) => (val / carbonStocks[idx] * 100).toFixed(1) + '%');
+        const percent_C_soil = C_soil.map((val, idx) => (val / carbonStocks[idx] * 100).toFixed(1) + '%');
+        const percent_C_dead = C_dead.map((val, idx) => (val / carbonStocks[idx] * 100).toFixed(1) + '%');
+        
+        // 配置项
+        const option = {
+            title: {
+                text: '碳储量变化趋势分析',
+                subtext: '1985-2025年碳储量及其组分动态',
+                left: 'center',
+                textStyle: {
+                    fontSize: 20,
+                    fontWeight: 'bold',
+                    color: '#2c3e50'
+                },
+                subtextStyle: {
+                    fontSize: 14,
+                    color: '#5a7d9a'
+                }
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow'
+                },
+                backgroundColor: 'rgba(255,255,255,0.95)',
+                borderWidth: 1,
+                borderColor: '#e6f0f7',
+                padding: 15,
+                textStyle: {
+                    color: '#4a6572'
+                },
+                formatter: function(params) {
+                    const year = params[0].name;
+                    const idx = years.indexOf(year);
+                    
+                    let html = `<div style="font-size:16px;font-weight:bold;color:#2c3e50;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #eaeff5">${year}年碳储量分析</div>`;
+                    
+                    // 总碳储量
+                    html += `<div style="display:flex;justify-content:space-between;margin:10px 0;align-items:center;">
+                        <div style="display:flex;align-items:center;">
+                            <div style="width:12px;height:12px;border-radius:50%;background:#c23531;margin-right:8px;"></div>
+                            <span>总碳储量：</span>
+                        </div>
+                        <span style="font-weight:bold;font-size:16px;">${carbonStocks[idx]} 吨/公顷</span>
+                    </div>`;
+                    
+                    // 各组分
+                    params.forEach(param => {
+                        if (param.seriesName !== '总碳储量') {
+                            const percent = param.seriesName === '地上碳库' ? percent_C_above[idx] :
+                                           param.seriesName === '地下碳库' ? percent_C_below[idx] :
+                                           param.seriesName === '土壤碳库' ? percent_C_soil[idx] : 
+                                           percent_C_dead[idx];
+                            
+                            html += `<div style="display:flex;justify-content:space-between;margin:10px 0;align-items:center;">
+                                <div style="display:flex;align-items:center;">
+                                    <div style="width:12px;height:12px;border-radius:2px;background:${param.color};margin-right:8px;"></div>
+                                    <span>${param.seriesName}：</span>
+                                </div>
+                                <div>
+                                    <span style="font-weight:500;">${param.value} 吨/公顷</span>
+                                    <span style="font-size:0.9em;background:#f0f7ff;padding:2px 8px;border-radius:10px;margin-left:8px;">${percent}</span>
+                                </div>
+                            </div>`;
+                        }
+                    });
+                    
+                    return html;
+                }
+            },
+            legend: {
+                data: ['总碳储量', '地上碳库', '地下碳库', '土壤碳库', '死亡有机物'],
+                bottom: 15,
+                itemWidth: 25,
+                itemHeight: 14,
+                textStyle: {
+                    fontSize: 13
+                }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '15%',
+                top: '15%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: years,
+                axisLine: {
+                    lineStyle: {
+                        color: '#5a7d9a'
+                    }
+                },
+                axisLabel: {
+                    color: '#4a6572',
+                    fontSize: 13
+                },
+                axisTick: {
+                    show: false
+                }
+            },
+            yAxis: {
+                type: 'value',
+                name: '碳储量 (吨/公顷)',
+                nameTextStyle: {
+                    color: '#5a7d9a',
+                    padding: [0, 0, 0, 40],
+                    fontSize: 13
+                },
+                axisLine: {
+                    show: true,
+                    lineStyle: {
+                        color: '#5a7d9a'
+                    }
+                },
+                axisLabel: {
+                    color: '#4a6572'
+                },
+                splitLine: {
+                    lineStyle: {
+                        type: 'dashed',
+                        color: '#e6f0f7'
+                    }
+                }
+            },
+            series: [
+                // 总碳储量 - 折线图
+                {
+                    name: '总碳储量',
+                    type: 'line',
+                    data: carbonStocks,
+                    symbol: 'circle',
+                    symbolSize: 10,
+                    lineStyle: {
+                        width: 4,
+                        color: '#c23531'
+                    },
+                    itemStyle: {
+                        color: '#c23531'
+                    },
+                    markPoint: {
+                        data: [
+                            { 
+                                type: 'max', 
+                                name: '峰值', 
+                                symbol: 'pin',
+                                symbolSize: 50,
+                                itemStyle: { color: '#27ae60' }
+                            },
+                            { 
+                                type: 'min', 
+                                name: '谷值', 
+                                symbol: 'pin',
+                                symbolSize: 50,
+                                itemStyle: { color: '#e74c3c' }
+                            }
+                        ],
+                        label: {
+                            formatter: '{b}',
+                            position: 'top',
+                            color: '#fff',
+                            backgroundColor: 'rgba(0,0,0,0.7)',
+                            padding: [4, 8],
+                            borderRadius: 4
+                        }
+                    }
+                },
+                // 地上碳库
+                {
+                    name: '地上碳库',
+                    type: 'bar',
+                    stack: 'components',
+                    data: C_above,
+                    itemStyle: { 
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: '#5470c6' },
+                            { offset: 1, color: '#83a0e0' }
+                        ])
+                    },
+                    emphasis: { focus: 'series' },
+                    animationDelay: idx => idx * 100
+                },
+                // 地下碳库
+                {
+                    name: '地下碳库',
+                    type: 'bar',
+                    stack: 'components',
+                    data: C_below,
+                    itemStyle: { 
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: '#91cc75' },
+                            { offset: 1, color: '#b3e09a' }
+                        ])
+                    },
+                    emphasis: { focus: 'series' },
+                    animationDelay: idx => idx * 100 + 50
+                },
+                // 土壤碳库
+                {
+                    name: '土壤碳库',
+                    type: 'bar',
+                    stack: 'components',
+                    data: C_soil,
+                    itemStyle: { 
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: '#fac858' },
+                            { offset: 1, color: '#fcdd8a' }
+                        ])
+                    },
+                    emphasis: { focus: 'series' },
+                    animationDelay: idx => idx * 100 + 100
+                },
+                // 死亡有机物
+                {
+                    name: '死亡有机物',
+                    type: 'bar',
+                    stack: 'components',
+                    data: C_dead,
+                    itemStyle: { 
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: '#ee6666' },
+                            { offset: 1, color: '#f8a1a1' }
+                        ])
+                    },
+                    emphasis: { focus: 'series' },
+                    animationDelay: idx => idx * 100 + 150
+                }
+            ],
+            // 工具箱
+            toolbox: {
+                feature: {
+                    saveAsImage: { 
+                        title: '保存图片',
+                        pixelRatio: 2,
+                        name: '碳储量变化分析'
+                    },
+                    dataView: {
+                        title: '查看数据',
+                        readOnly: true,
+                        lang: ['数据视图', '关闭', '刷新'],
+                        optionToContent: function(opt) {
+                            const axisData = opt.xAxis[0].data;
+                            const series = opt.series;
+                            let table = '<table style="width:100%;text-align:center;border-collapse:collapse;"><thead><tr><th style="background:#4e79a7;color:#fff;padding:10px;">年份</th>';
+                            
+                            // 添加表头
+                            series.forEach(item => {
+                                table += `<th style="background:#4e79a7;color:#fff;padding:10px;">${item.name}</th>`;
+                            });
+                            table += '</tr></thead><tbody>';
+                            
+                            // 添加数据行
+                            for (let i = 0; i < axisData.length; i++) {
+                                table += `<tr><td style="padding:10px;border:1px solid #eee;background:${i % 2 === 0 ? '#fff' : '#f9fbfd'}">${axisData[i]}</td>`;
+                                series.forEach(item => {
+                                    table += `<td style="padding:10px;border:1px solid #eee;background:${i % 2 === 0 ? '#fff' : '#f9fbfd'}">${item.data[i]}</td>`;
+                                });
+                                table += '</tr>';
+                            }
+                            table += '</tbody></table>';
+                            return table;
+                        }
+                    },
+                    magicType: {
+                        type: ['line', 'bar', 'stack'],
+                        title: {
+                            line: '折线图',
+                            bar: '柱状图',
+                            stack: '堆叠图'
+                        }
+                    },
+                    restore: { title: '重置' }
+                },
+                right: 20,
+                top: 10,
+                itemSize: 14,
+                iconStyle: {
+                    borderWidth: 0.5,
+                    borderColor: '#5a7d9a'
+                }
+            },
+            animationEasing: 'elasticOut',
+            animationDelayUpdate: idx => idx * 20
+        };
+        
+        // 应用配置
+        myChart.setOption(option);
+        
+        // 响应式调整
+        window.addEventListener('resize', () => myChart.resize());
+    </script>
+
+</body></html>
