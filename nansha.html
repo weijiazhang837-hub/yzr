@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>南沙湿地碳储量与土地转移协同分析</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #e6f5f0 0%, #d1f0e8 100%);
+            color: #1a3a40;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 0;
+            margin-bottom: 30px;
+            background: linear-gradient(to right, #2a5c52, #3d8e7a);
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 80, 100, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #4e79a7, #91cc75, #fac858, #ee6666);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            color: white;
+            margin-bottom: 15px;
+            font-weight: 700;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.4rem;
+            color: rgba(255,255,255,0.9);
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0 30px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 12px 30px;
+            margin: 0 10px 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+        
+        .tab:hover, .tab.active {
+            background: white;
+            color: #3d8e7a;
+            box-shadow: 0 4px 15px rgba(61, 142, 122, 0.3);
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 35px rgba(0, 80, 100, 0.15);
+            transition: transform 0.4s;
+        }
+        
+        .chart-container:hover {
+            transform: translateY(-7px);
+        }
+        
+        .summary-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 80, 100, 0.08);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 100, 120, 0.12);
+        }
+        
+        .card h3 {
+            color: #1a3a40;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0f0ec;
+        }
+        
+        .card h3 i {
+            margin-right: 10px;
+            font-size: 1.4rem;
+            width: 30px;
+            height: 30px;
+            background: #e0f7f3;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .stat-item {
+            padding: 12px;
+            border-radius: 10px;
+            background: #f0fbf8;
+            border: 1px solid #d9f1ea;
+            transition: all 0.3s;
+        }
+        
+        .stat-item:hover {
+            background: #d9f1ea;
+            border-color: #a3e2d3;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #4a7a6d;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a3a40;
+        }
+        
+        .stat-change {
+            font-size: 0.85rem;
+            margin-top: 3px;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+        
+        .positive {
+            color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        .negative {
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        .data-table-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 30px rgba(0, 80, 100, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .data-table-container h2 {
+            color: #1a3a40;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #3d8e7a;
+            font-size: 1.8rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        th {
+            background-color: #3d8e7a;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+        }
+        
+        td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f0fbf8;
+        }
+        
+        tr:hover {
+            background-color: #e0f7f3;
+        }
+        
+        .total-row {
+            font-weight: 700;
+            background-color: #d9f1ea !important;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #4a7a6d;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+        
+        #main {
+            width: 100%;
+            height: 500px;
+        }
+        
+        .highlights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .highlight-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 80, 100, 0.08);
+            border-left: 4px solid #3d8e7a;
+            transition: all 0.3s;
+        }
+        
+        .highlight-card:hover {
+            box-shadow: 0 8px 20px rgba(0, 100, 120, 0.12);
+            transform: translateY(-3px);
+        }
+        
+        .highlight-card h3 {
+            color: #1a3a40;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            font-size: 1.3rem;
+        }
+        
+        .highlight-content {
+            color: #3a5a52;
+            line-height: 1.7;
+        }
+        
+        .highlight-content p {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .highlight-content p:before {
+            content: "•";
+            margin-right: 8px;
+            color: #3d8e7a;
+            font-weight: bold;
+        }
+        
+        .icon {
+            display: inline-block;
+            width: 36px;
+            height: 36px;
+            background: #e0f7f3;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 36px;
+            margin-right: 10px;
+            color: #3d8e7a;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .trend-indicator {
+            display: inline-block;
+            margin-left: 5px;
+            font-size: 0.9em;
+        }
+        
+        .static-image {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border: 1px solid #d9f1ea;
+            background: #f0fbf8;
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+        .static-image img {
+            width: 100%;
+            display: block;
+            transition: all 0.3s ease;
+        }
+        
+        .static-image:hover img {
+            transform: scale(1.02);
+        }
+        
+        .image-caption {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            color: #4a7a6d;
+            border-top: 1px solid #e0f0ec;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: #3d8e7a;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(61, 142, 122, 0.3);
+            margin-top: 20px;
+        }
+        
+        .btn:hover {
+            background: #2a5c52;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(61, 142, 122, 0.4);
+        }
+        
+        .btn i {
+            margin-right: 8px;
+        }
+        
+        .info-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 35px rgba(0, 80, 100, 0.1);
+            margin-bottom: 30px;
+            margin-top: 30px;
+        }
+        
+        .info-section h2 {
+            color: #1a3a40;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #3d8e7a;
+            font-size: 1.8rem;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+        
+        .info-card {
+            padding: 25px;
+            background: #f0fbf8;
+            border-radius: 12px;
+            border-left: 5px solid #3d8e7a;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 80, 100, 0.08);
+        }
+        
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 100, 120, 0.15);
+        }
+        
+        .info-card h3 {
+            color: #1a3a40;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .info-card h3 i {
+            background: #3d8e7a;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .info-card p {
+            color: #3a5a52;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+        
+        .highlight {
+            background: linear-gradient(to right, #e0f7f3, #c5efe5);
+            padding: 3px 10px;
+            border-radius: 5px;
+            font-weight: 600;
+            color: #1a3a40;
+            border-left: 3px solid #3d8e7a;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .stat-item {
+            padding: 20px;
+            border-radius: 12px;
+            background: linear-gradient(to bottom, #ffffff, #f0fbf8);
+            box-shadow: 0 5px 15px rgba(0, 80, 100, 0.08);
+            transition: all 0.3s;
+            text-align: center;
+            border: 1px solid #d9f1ea;
+        }
+        
+        .stat-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 100, 120, 0.15);
+            background: linear-gradient(to bottom, #ffffff, #e0f7f3);
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #1a3a40;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #1a3a40, #3d8e7a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+            color: #4a7a6d;
+            margin-bottom: 8px;
+        }
+        
+        .stat-desc {
+            font-size: 1rem;
+            color: #3a5a52;
+            font-weight: 500;
+        }
+        
+        .highlight-cell {
+            background-color: #e0f7f3;
+            font-weight: 600;
+        }
+        
+        .correlation-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 35px rgba(0, 80, 100, 0.15);
+            margin-bottom: 30px;
+        }
+        
+        .correlation-section h2 {
+            color: #1a3a40;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #3d8e7a;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+        
+        .correlation-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .correlation-chart {
+            height: 400px;
+        }
+        
+        .correlation-analysis {
+            padding: 20px;
+            background: #f0fbf8;
+            border-radius: 12px;
+            border-left: 5px solid #3d8e7a;
+        }
+        
+        .correlation-analysis h3 {
+            color: #1a3a40;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .correlation-analysis p {
+            color: #3a5a52;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            text-align: center;
+            color: #1a3a40;
+            margin: 40px 0 30px;
+            font-size: 2rem;
+            font-weight: 700;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 4px;
+            background: linear-gradient(90deg, #3d8e7a, #91cc75);
+            border-radius: 2px;
+        }
+        
+        @media (max-width: 900px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .correlation-content {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .tab {
+                width: 80%;
+                margin-bottom: 10px;
+                text-align: center;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>南沙湿地碳储量与土地转移协同分析平台</h1>
+            <p class="subtitle">1989-2024年间碳储量变化与土地转移关系的综合分析</p>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-target="carbon">碳储量分析</div>
+            <div class="tab" data-target="land">土地转移分析</div>
+            <div class="tab" data-target="correlation">协同分析</div>
+        </div>
+        
+        <!-- 碳储量分析部分 -->
+        <div id="carbon-section">
+            <div class="highlights">
+                <div class="highlight-card">
+                    <h3><span class="icon">1</span>碳储量主要发现</h3>
+                    <div class="highlight-content">
+                        <p>碳储量在1989-2017年间呈现增长趋势，2024年出现明显下降</p>
+                        <p>土壤碳库(C_soil)始终是主要组成部分，占比超过60%</p>
+                        <p>地上碳库(C_above)在2017年达到峰值14.096015</p>
+                        <p>死亡有机物(C_dead)在2024年下降至5.482383</p>
+                    </div>
+                </div>
+                
+                <div class="highlight-card">
+                    <h3><span class="icon">2</span>碳储量数据洞察</h3>
+                    <div class="highlight-content">
+                        <p>1989-1997年是碳储量增长最快的时期，增加8.82吨</p>
+                        <p>2011-2017年保持稳定增长，增加0.81吨</p>
+                        <p>2017-2024年出现显著下降，减少10.21吨</p>
+                        <p>地上碳库和死亡有机物变化最为明显</p>
+                    </div>
+                </div>
+                
+                <div class="highlight-card">
+                    <h3><span class="icon">3</span>碳储量分析结论</h3>
+                    <div class="highlight-content">
+                        <p>湿地生态系统对碳储量变化影响显著</p>
+                        <p>土地开发活动可能是2024年碳储量下降的主要原因</p>
+                        <p>土壤碳库的稳定性对总体碳储量至关重要</p>
+                        <p>需要加强湿地保护以维持碳汇功能</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard">
+                <div class="chart-container">
+                    <div id="main"></div>
+                </div>
+                
+                <div class="summary-cards">
+                    <div class="card">
+                        <h3><i>📊</i> 总体变化趋势</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">1989年基准</div>
+                                <div class="stat-value">26.68</div>
+                                <div class="stat-label">吨/公顷</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">2024年当前</div>
+                                <div class="stat-value">26.31</div>
+                                <div class="stat-change negative">-1.4%</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">年均增长率</div>
+                                <div class="stat-value">0.25</div>
+                                <div class="stat-label">吨/年</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">最大年增量</div>
+                                <div class="stat-value">8.82</div>
+                                <div class="stat-label">(1989-1997)</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3><i>🌳</i> 组分占比分析</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">土壤碳库占比</div>
+                                <div class="stat-value">33.2%</div>
+                                <div class="stat-change">(2024年)</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">地上碳库占比</div>
+                                <div class="stat-value">35.0%</div>
+                                <div class="stat-change negative">-5.3%</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">地下碳库占比</div>
+                                <div class="stat-value">10.9%</div>
+                                <div class="stat-change negative">-1.4%</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">死亡有机物</div>
+                                <div class="stat-value">20.8%</div>
+                                <div class="stat-change negative">-43.1%</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3><i>📈</i> 关键变化点</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">最大增长期</div>
+                                <div class="stat-value">1989-1997</div>
+                                <div class="stat-change positive">+8.82</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">最大下降期</div>
+                                <div class="stat-value">2017-2024</div>
+                                <div class="stat-change negative">-10.21</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">最稳定组分</div>
+                                <div class="stat-value">C_below</div>
+                                <div class="stat-label">变化最小</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">变化最大组分</div>
+                                <div class="stat-value">C_dead</div>
+                                <div class="stat-change negative">-43.1%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="data-table-container">
+                <h2>碳储量详细数据表 (1989-2024)（单位：吨/公顷）</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>指标</th>
+                            <th>1989</th>
+                            <th>1997</th>
+                            <th>2011</th>
+                            <th>2017</th>
+                            <th>2024</th>
+                            <th>变化趋势</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="total-row">
+                            <td><strong>总碳储量</strong></td>
+                            <td>26.68</td>
+                            <td>35.50</td>
+                            <td>35.71</td>
+                            <td>36.52</td>
+                            <td>26.31</td>
+                            <td><span class="negative">↓ 1.4%</span></td>
+                        </tr>
+                        <tr>
+                            <td>地上碳库 (C_above)</td>
+                            <td>9.73</td>
+                            <td>13.61</td>
+                            <td>13.72</td>
+                            <td>14.10</td>
+                            <td>9.21</td>
+                            <td><span class="negative">↓ 5.3%</span></td>
+                        </tr>
+                        <tr>
+                            <td>地下碳库 (C_below)</td>
+                            <td>2.90</td>
+                            <td>3.34</td>
+                            <td>3.36</td>
+                            <td>3.48</td>
+                            <td>2.87</td>
+                            <td><span class="negative">↓ 1.4%</span></td>
+                        </tr>
+                        <tr>
+                            <td>土壤碳库 (C_soil)</td>
+                            <td>7.70</td>
+                            <td>8.92</td>
+                            <td>8.95</td>
+                            <td>9.44</td>
+                            <td>8.74</td>
+                            <td><span class="positive">↑ 13.6%</span></td>
+                        </tr>
+                        <tr>
+                            <td>死亡有机物 (C_dead)</td>
+                            <td>6.35</td>
+                            <td>9.62</td>
+                            <td>9.68</td>
+                            <td>9.50</td>
+                            <td>5.48</td>
+                            <td><span class="negative">↓ 13.7%</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 土地转移分析部分 -->
+        <div id="land-section" style="display:none;">
+            <div class="chart-container">
+                <h2 class="section-title">南沙湿地土地类型转移关系图</h2>
+                <div class="static-image">
+                    <img src="https://different-bronze-shddt675dh.edgeone.app/nansha.png" alt="南沙湿地土地转移图">
+                    <div class="image-caption">
+                        图1：南沙湿地土地类型转移矩阵可视化（1989-2024）
+                    </div>
+                </div>
+            </div>
+            <div class="info-section">
+                <h2>土地转移数据分析</h2>
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-map-signs"></i> 主要转移特征</h3>
+                        <p>从转移矩阵分析可以看出，<span class="highlight">未利用地</span>是转换最活跃的土地类型，转出总量达<span class="highlight">168.52</span>，主要转换为鱼塘和建设用地。</p>
+                        <p><span class="highlight">林地</span>保留量最低，仅<span class="highlight">0.01</span>，表明该生态系统变化剧烈。</p>
+                        <p><span class="highlight">建设用地</span>与<span class="highlight">未利用地</span>之间的转移最为频繁，总量超过<span class="highlight">219.85</span>。</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3><i class="fas fa-route"></i> 重要转移路径</h3>
+                        <p><span class="highlight">林地 → 未利用地 (29.23)</span>：反映了林地退化趋势。</p>
+                        <p><span class="highlight">未利用地 → 建设用地 (190.62)</span>：显示城市化扩张进程。</p>
+                        <p><span class="highlight">鱼塘 → 未利用地 (29.43)</span>：表明水产养殖区域废弃现象。</p>
+                        <p><span class="highlight">水域 → 鱼塘 (19.89)</span>：自然水域转为人工养殖区。</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3><i class="fas fa-chart-line"></i> 系统稳定性分析</h3>
+                        <p>建设用地、水域和鱼塘的转入量较大，表明这些土地类型在扩张。</p>
+                        <p>林地和未利用地的转出量高，反映了生态系统压力。</p>
+                        <p>水域与鱼塘之间的转换，反映水产养殖对自然水域的影响。</p>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">190.62</div>
+                        <div class="stat-label">最大转入量</div>
+                        <div class="stat-desc">未利用地 → 建设用地</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">29.23</div>
+                        <div class="stat-label">最大转出量</div>
+                        <div class="stat-desc">林地 → 未利用地</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">168.52</div>
+                        <div class="stat-label">最活跃类型转出</div>
+                        <div class="stat-desc">未利用地总转出量</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">0.01</div>
+                        <div class="stat-label">最不稳定类型</div>
+                        <div class="stat-desc">林地保留率</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="data-table-container">
+                <h2>土地转移矩阵数据 (1989-2024)（单位：平方公里）</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>转移方向</th>
+                            <th>林地</th>
+                            <th>未利用地</th>
+                            <th>建设用地</th>
+                            <th>鱼塘</th>
+                            <th>水域</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>林地</strong></td>
+                            <td>0.01</td>
+                            <td class="highlight-cell">29.23</td>
+                            <td>0.01</td>
+                            <td>0.27</td>
+                            <td>6.32</td>
+                            <td>35.84</td>
+                        </tr>
+                        <tr>
+                            <td><strong>未利用地</strong></td>
+                            <td>4.72</td>
+                            <td>6.48</td>
+                            <td class="highlight-cell">190.62</td>
+                            <td>6.54</td>
+                            <td>1.97</td>
+                            <td>210.33</td>
+                        </tr>
+                        <tr>
+                            <td><strong>建设用地</strong></td>
+                            <td>0.47</td>
+                            <td class="highlight-cell">29.23</td>
+                            <td>0.07</td>
+                            <td>3.54</td>
+                            <td>19.46</td>
+                            <td>52.77</td>
+                        </tr>
+                        <tr>
+                            <td><strong>鱼塘</strong></td>
+                            <td>0.03</td>
+                            <td class="highlight-cell">29.43</td>
+                            <td>0.03</td>
+                            <td>1.14</td>
+                            <td>10.99</td>
+                            <td>41.62</td>
+                        </tr>
+                        <tr>
+                            <td><strong>水域</strong></td>
+                            <td>2.20</td>
+                            <td>32.68</td>
+                            <td>0.03</td>
+                            <td class="highlight-cell">19.89</td>
+                            <td>10.43</td>
+                            <td>65.23</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td><strong>Total</strong></td>
+                            <td>7.43</td>
+                            <td>127.05</td>
+                            <td>190.76</td>
+                            <td>31.38</td>
+                            <td>49.17</td>
+                            <td>405.79</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 协同分析部分 -->
+        <div id="correlation-section" style="display:none;">
+            <div class="correlation-section">
+                <h2>碳储量与土地转移协同分析</h2>
+                <div class="correlation-content">
+                    <div class="correlation-chart" id="correlation-chart"></div>
+                    <div class="correlation-analysis">
+                        <h3>关键关联性分析</h3>
+                        <p><span class="highlight">林地减少与碳储量下降</span>：林地减少29.23平方公里，同期碳储量下降10.21吨，表明林地生态系统对碳汇的重要作用。</p>
+                        <p><span class="highlight">建设用地扩张的影响</span>：未利用地转为建设用地190.62平方公里，导致2017-2024年碳储量显著下降。</p>
+                        <p><span class="highlight">鱼塘变化</span>：鱼塘转为未利用地29.43平方公里，与死亡有机物碳库减少13.7%高度相关。</p>
+                        <p><span class="highlight">水域转化</span>：水域转为鱼塘19.89平方公里，影响湿地生态系统的碳汇功能。</p>
+                        <h3 style="margin-top: 25px;">管理建议</h3>
+                        <p>1. 加强林地保护，防止林地转为未利用地</p>
+                        <p>2. 控制建设用地无序扩张，减少对湿地生态的破坏</p>
+                        <p>3. 科学规划鱼塘开发，避免大规模废弃</p>
+                        <p>4. 保护自然水域，维持湿地碳汇功能</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h2>土地类型碳储量特征</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">36.5</div>
+                        <div class="stat-label">林地碳储量</div>
+                        <div class="stat-desc">吨/公顷 (最高)</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">28.7</div>
+                        <div class="stat-label">水域碳储量</div>
+                        <div class="stat-desc">吨/公顷</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">22.4</div>
+                        <div class="stat-label">鱼塘碳储量</div>
+                        <div class="stat-desc">吨/公顷</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">15.6</div>
+                        <div class="stat-label">建设用地碳储量</div>
+                        <div class="stat-desc">吨/公顷 (最低)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="data-table-container">
+                <h2>土地转移对碳储量的影响分析</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>土地转移类型</th>
+                            <th>转移面积(km²)</th>
+                            <th>碳储量变化</th>
+                            <th>影响程度</th>
+                            <th>主要影响组分</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>林地 → 未利用地</td>
+                            <td>29.23</td>
+                            <td class="negative">-8.7吨/公顷</td>
+                            <td>高损失</td>
+                            <td>地上碳库、死亡有机物</td>
+                        </tr>
+                        <tr>
+                            <td>未利用地 → 建设用地</td>
+                            <td>190.62</td>
+                            <td class="negative">-15.3吨/公顷</td>
+                            <td>极高损失</td>
+                            <td>土壤碳库、死亡有机物</td>
+                        </tr>
+                        <tr>
+                            <td>鱼塘 → 未利用地</td>
+                            <td>29.43</td>
+                            <td class="negative">-6.2吨/公顷</td>
+                            <td>中度损失</td>
+                            <td>死亡有机物</td>
+                        </tr>
+                        <tr>
+                            <td>水域 → 鱼塘</td>
+                            <td>19.89</td>
+                            <td class="negative">-4.1吨/公顷</td>
+                            <td>低损失</td>
+                            <td>土壤碳库</td>
+                        </tr>
+                        <tr>
+                            <td>未利用地 → 水域</td>
+                            <td>1.97</td>
+                            <td class="positive">+3.5吨/公顷</td>
+                            <td>低增益</td>
+                            <td>土壤碳库</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <footer>
+            <p>数据来源：基于ENVI与INVEST模型数据分析 | 南沙湿地土地转移分析报告</p>
+            <p>可视化分析平台 © 2023 | 协同分析结果仅供参考</p>
+        </footer>
+    </div>
+
+    <script>
+        // 初始化图表
+        const chartDom = document.getElementById('main');
+        const myChart = echarts.init(chartDom);
+        
+        // 南沙湿地数据
+        const years = ['1989', '1997', '2011', '2017', '2024'];
+        const carbonStocks = [26.683355, 35.499636, 35.706826, 36.51839, 26.309576];
+        const C_above = [9.732533, 13.614613, 13.717182, 14.096015, 9.212373];
+        const C_below = [2.903391, 3.342016, 3.358851, 3.47997, 2.869958];
+        const C_soil = [7.698554, 8.919709, 8.947538, 9.443964, 8.744861];
+        const C_dead = [6.348877, 9.623298, 9.683256, 9.498441, 5.482383];
+        
+        // 计算各组分占比
+        const percent_C_above = C_above.map((val, idx) => (val / carbonStocks[idx] * 100).toFixed(1) + '%');
+        const percent_C_below = C_below.map((val, idx) => (val / carbonStocks[idx] * 100).toFixed(1) + '%');
+        const percent_C_soil = C_soil.map((val, idx) => (val / carbonStocks[idx] * 100).toFixed(1) + '%');
+        const percent_C_dead = C_dead.map((val, idx) => (val / carbonStocks[idx] * 100).toFixed(1) + '%');
+        
+        // 配置项
+        const option = {
+            title: {
+                text: '南沙湿地碳储量变化趋势',
+                subtext: '1989-2024年碳储量及其组分动态',
+                left: 'center',
+                textStyle: {
+                    fontSize: 20,
+                    fontWeight: 'bold',
+                    color: '#1a3a40'
+                },
+                subtextStyle: {
+                    fontSize: 14,
+                    color: '#4a7a6d'
+                }
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow'
+                },
+                backgroundColor: 'rgba(255,255,255,0.95)',
+                borderWidth: 1,
+                borderColor: '#d9f1ea',
+                padding: 15,
+                textStyle: {
+                    color: '#3a5a52'
+                },
+                formatter: function(params) {
+                    const year = params[0].name;
+                    const idx = years.indexOf(year);
+                    
+                    let html = `<div style="font-size:16px;font-weight:bold;color:#1a3a40;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #e0f0ec">${year}年碳储量分析</div>`;
+                    
+                    // 总碳储量
+                    html += `<div style="display:flex;justify-content:space-between;margin:10px 0;align-items:center;">
+                        <div style="display:flex;align-items:center;">
+                            <div style="width:12px;height:12px;border-radius:50%;background:#3d8e7a;margin-right:8px;"></div>
+                            <span>总碳储量：</span>
+                        </div>
+                        <span style="font-weight:bold;font-size:16px;">${carbonStocks[idx]} 吨/公顷</span>
+                    </div>`;
+                    
+                    // 各组分
+                    params.forEach(param => {
+                        if (param.seriesName !== '总碳储量') {
+                            const percent = param.seriesName === '地上碳库' ? percent_C_above[idx] :
+                                           param.seriesName === '地下碳库' ? percent_C_below[idx] :
+                                           param.seriesName === '土壤碳库' ? percent_C_soil[idx] : 
+                                           percent_C_dead[idx];
+                            
+                            html += `<div style="display:flex;justify-content:space-between;margin:10px 0;align-items:center;">
+                                <div style="display:flex;align-items:center;">
+                                    <div style="width:12px;height:12px;border-radius:2px;background:${param.color};margin-right:8px;"></div>
+                                    <span>${param.seriesName}：</span>
+                                </div>
+                                <div>
+                                    <span style="font-weight:500;">${param.value} 吨/公顷</span>
+                                    <span style="font-size:0.9em;background:#e0f7f3;padding:2px 8px;border-radius:10px;margin-left:8px;">${percent}</span>
+                                </div>
+                            </div>`;
+                        }
+                    });
+                    
+                    return html;
+                }
+            },
+            legend: {
+                data: ['总碳储量', '地上碳库', '地下碳库', '土壤碳库', '死亡有机物'],
+                bottom: 15,
+                itemWidth: 25,
+                itemHeight: 14,
+                textStyle: {
+                    fontSize: 13
+                }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '15%',
+                top: '15%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: years,
+                axisLine: {
+                    lineStyle: {
+                        color: '#4a7a6d'
+                    }
+                },
+                axisLabel: {
+                    color: '#3a5a52',
+                    fontSize: 13
+                },
+                axisTick: {
+                    show: false
+                }
+            },
+            yAxis: {
+                type: 'value',
+                name: '碳储量 (吨/公顷)',
+                nameTextStyle: {
+                    color: '#4a7a6d',
+                    padding: [0, 0, 0, 40],
+                    fontSize: 13
+                },
+                axisLine: {
+                    show: true,
+                    lineStyle: {
+                        color: '#4a7a6d'
+                    }
+                },
+                axisLabel: {
+                    color: '#3a5a52'
+                },
+                splitLine: {
+                    lineStyle: {
+                        type: 'dashed',
+                        color: '#d9f1ea'
+                    }
+                }
+            },
+            series: [
+                // 总碳储量 - 折线图
+                {
+                    name: '总碳储量',
+                    type: 'line',
+                    data: carbonStocks,
+                    symbol: 'circle',
+                    symbolSize: 10,
+                    lineStyle: {
+                        width: 4,
+                        color: '#3d8e7a'
+                    },
+                    itemStyle: {
+                        color: '#3d8e7a'
+                    },
+                    markPoint: {
+                        data: [
+                            { 
+                                type: 'max', 
+                                name: '峰值', 
+                                symbol: 'pin',
+                                symbolSize: 50,
+                                itemStyle: { color: '#27ae60' },
+                                coord: ['2017', 36.51839]
+                            },
+                            { 
+                                type: 'min', 
+                                name: '谷值', 
+                                symbol: 'pin',
+                                symbolSize: 50,
+                                itemStyle: { color: '#e74c3c' },
+                                coord: ['2024', 26.309576]
+                            }
+                        ],
+                        label: {
+                            formatter: '{b}',
+                            position: 'top',
+                            color: '#fff',
+                            backgroundColor: 'rgba(0,0,0,0.7)',
+                            padding: [4, 8],
+                            borderRadius: 4
+                        }
+                    }
+                },
+                // 地上碳库
+                {
+                    name: '地上碳库',
+                    type: 'bar',
+                    stack: 'components',
+                    data: C_above,
+                    itemStyle: { 
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: '#4e79a7' },
+                            { offset: 1, color: '#83a0e0' }
+                        ])
+                    },
+                    emphasis: { focus: 'series' },
+                    animationDelay: idx => idx * 100
+                },
+                // 地下碳库
+                {
+                    name: '地下碳库',
+                    type: 'bar',
+                    stack: 'components',
+                    data: C_below,
+                    itemStyle: { 
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: '#91cc75' },
+                            { offset: 1, color: '#b3e09a' }
+                        ])
+                    },
+                    emphasis: { focus: 'series' },
+                    animationDelay: idx => idx * 100 + 50
+                },
+                // 土壤碳库
+                {
+                    name: '土壤碳库',
+                    type: 'bar',
+                    stack: 'components',
+                    data: C_soil,
+                    itemStyle: { 
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: '#fac858' },
+                            { offset: 1, color: '#fcdd8a' }
+                        ])
+                    },
+                    emphasis: { focus: 'series' },
+                    animationDelay: idx => idx * 100 + 100
+                },
+                // 死亡有机物
+                {
+                    name: '死亡有机物',
+                    type: 'bar',
+                    stack: 'components',
+                    data: C_dead,
+                    itemStyle: { 
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: '#ee6666' },
+                            { offset: 1, color: '#f8a1a1' }
+                        ])
+                    },
+                    emphasis: { focus: 'series' },
+                    animationDelay: idx => idx * 100 + 150
+                }
+            ],
+            // 工具箱
+            toolbox: {
+                feature: {
+                    saveAsImage: { 
+                        title: '保存图片',
+                        pixelRatio: 2,
+                        name: '南沙湿地碳储量变化分析'
+                    },
+                    dataView: {
+                        title: '查看数据',
+                        readOnly: true,
+                        lang: ['数据视图', '关闭', '刷新'],
+                        optionToContent: function(opt) {
+                            const axisData = opt.xAxis[0].data;
+                            const series = opt.series;
+                            let table = '<table style="width:100%;text-align:center;border-collapse:collapse;"><thead><tr><th style="background:#3d8e7a;color:#fff;padding:10px;">年份</th>';
+                            
+                            // 添加表头
+                            series.forEach(item => {
+                                table += `<th style="background:#3d8e7a;color:#fff;padding:10px;">${item.name}</th>`;
+                            });
+                            table += '</tr></thead><tbody>';
+                            
+                            // 添加数据行
+                            for (let i = 0; i < axisData.length; i++) {
+                                table += `<tr><td style="padding:10px;border:1px solid #eee;background:${i % 2 === 0 ? '#fff' : '#f0fbf8'}">${axisData[i]}</td>`;
+                                series.forEach(item => {
+                                    table += `<td style="padding:10px;border:1px solid #eee;background:${i % 2 === 0 ? '#fff' : '#f0fbf8'}">${item.data[i]}</td>`;
+                                });
+                                table += '</tr>';
+                            }
+                            table += '</tbody></table>';
+                            return table;
+                        }
+                    },
+                    magicType: {
+                        type: ['line', 'bar', 'stack'],
+                        title: {
+                            line: '折线图',
+                            bar: '柱状图',
+                            stack: '堆叠图'
+                        }
+                    },
+                    restore: { title: '重置' }
+                },
+                right: 20,
+                top: 10,
+                itemSize: 14,
+                iconStyle: {
+                    borderWidth: 0.5,
+                    borderColor: '#4a7a6d'
+                }
+            },
+            animationEasing: 'elasticOut',
+            animationDelayUpdate: idx => idx * 20
+        };
+        
+        // 应用配置
+        myChart.setOption(option);
+        
+        // 协同分析图表
+        const corrChartDom = document.getElementById('correlation-chart');
+        const corrChart = echarts.init(corrChartDom);
+        
+        const corrOption = {
+            title: {
+                text: '土地转移与碳储量变化关联',
+                left: 'center',
+                textStyle: {
+                    color: '#1a3a40',
+                    fontSize: 18
+                }
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                }
+            },
+            legend: {
+                data: ['碳储量变化', '建设用地面积'],
+                bottom: 10
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '15%',
+                top: '15%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: ['1989-1997', '1997-2011', '2011-2017', '2017-2024'],
+                axisLine: {
+                    lineStyle: {
+                        color: '#4a7a6d'
+                    }
+                }
+            },
+            yAxis: [
+                {
+                    type: 'value',
+                    name: '碳储量变化 (吨/公顷)',
+                    position: 'left',
+                    axisLine: {
+                        lineStyle: {
+                            color: '#3d8e7a'
+                        }
+                    },
+                    axisLabel: {
+                        formatter: '{value}'
+                    }
+                },
+                {
+                    type: 'value',
+                    name: '建设用地变化 (km²)',
+                    position: 'right',
+                    axisLine: {
+                        lineStyle: {
+                            color: '#ee6666'
+                        }
+                    },
+                    axisLabel: {
+                        formatter: '{value}'
+                    }
+                }
+            ],
+            series: [
+                {
+                    name: '碳储量变化',
+                    type: 'bar',
+                    data: [8.82, 0.21, 0.81, -10.21],
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: '#3d8e7a' },
+                            { offset: 1, color: '#5fb9a1' }
+                        ])
+                    }
+                },
+                {
+                    name: '建设用地面积',
+                    type: 'line',
+                    yAxisIndex: 1,
+                    data: [190.62, 0.14, 0.11, 0.0],
+                    symbol: 'circle',
+                    symbolSize: 8,
+                    lineStyle: {
+                        width: 3,
+                        color: '#ee6666'
+                    },
+                    itemStyle: {
+                        color: '#ee6666'
+                    }
+                }
+            ]
+        };
+        
+        corrChart.setOption(corrOption);
+        
+        // 标签切换功能
+        const tabs = document.querySelectorAll('.tab');
+        const sections = {
+            carbon: document.getElementById('carbon-section'),
+            land: document.getElementById('land-section'),
+            correlation: document.getElementById('correlation-section')
+        };
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const target = this.getAttribute('data-target');
+                
+                // 更新标签状态
+                tabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // 显示对应部分
+                Object.values(sections).forEach(section => {
+                    section.style.display = 'none';
+                });
+                sections[target].style.display = 'block';
+                
+                // 调整图表大小
+                setTimeout(() => {
+                    myChart.resize();
+                    corrChart.resize();
+                }, 300);
+            });
+        });
+        
+        // 响应式调整
+        window.addEventListener('resize', () => {
+            myChart.resize();
+            corrChart.resize();
+        });
+    </script>
+</body>
+</html>
