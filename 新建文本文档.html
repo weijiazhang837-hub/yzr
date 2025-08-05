@@ -1,0 +1,2155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2023年赤潮爆发数据分析平台</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a192f 0%, #112240 100%);
+            color: #e6f1ff;
+            padding: 20px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 0;
+            margin-bottom: 30px;
+            background: linear-gradient(to right, #0d2b4e, #0a5c7a);
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 80, 100, 0.3);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(64, 224, 208, 0.2);
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #00a896, #02c39a, #64ffda, #5e60ce);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            color: white;
+            margin-bottom: 15px;
+            font-weight: 700;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.4rem;
+            color: rgba(255,255,255,0.85);
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0 30px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 12px 30px;
+            margin: 0 10px 10px;
+            background: rgba(10, 25, 47, 0.7);
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: 2px solid rgba(64, 224, 208, 0.3);
+            color: #64ffda;
+        }
+        
+        .tab:hover, .tab.active {
+            background: rgba(64, 224, 208, 0.2);
+            color: white;
+            box-shadow: 0 0 15px rgba(100, 255, 218, 0.4);
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: rgba(10, 25, 47, 0.7);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 35px rgba(0, 80, 100, 0.15);
+            transition: transform 0.4s;
+            border: 1px solid rgba(64, 224, 208, 0.2);
+        }
+        
+        .chart-container:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 0 25px rgba(100, 255, 218, 0.3);
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .card {
+            background: rgba(10, 25, 47, 0.7);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 80, 100, 0.08);
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(64, 224, 208, 0.2);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(100, 255, 218, 0.3);
+        }
+        
+        .card h3 {
+            color: #64ffda;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(64, 224, 208, 0.3);
+        }
+        
+        .card h3 i {
+            margin-right: 10px;
+            font-size: 1.4rem;
+            width: 30px;
+            height: 30px;
+            background: rgba(100, 255, 218, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .stat-item {
+            padding: 12px;
+            border-radius: 10px;
+            background: rgba(10, 25, 47, 0.5);
+            border: 1px solid rgba(64, 224, 208, 0.2);
+            transition: all 0.3s;
+        }
+        
+        .stat-item:hover {
+            background: rgba(64, 224, 208, 0.1);
+            border-color: #40e0d0;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #64ffda;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .stat-change {
+            font-size: 0.85rem;
+            margin-top: 3px;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+        
+        .positive {
+            color: #02c39a;
+            background: rgba(2, 195, 154, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        .negative {
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        .data-table-container {
+            background: rgba(10, 25, 47, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 30px rgba(0, 80, 100, 0.1);
+            margin-bottom: 30px;
+            border: 1px solid rgba(64, 224, 208, 0.2);
+        }
+        
+        .data-table-container h2 {
+            color: #64ffda;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #40e0d0;
+            font-size: 1.8rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        th {
+            background-color: #0a5c7a;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+        }
+        
+        td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(64, 224, 208, 0.2);
+        }
+        
+        tr:nth-child(even) {
+            background-color: rgba(10, 25, 47, 0.5);
+        }
+        
+        tr:hover {
+            background-color: rgba(64, 224, 208, 0.1);
+        }
+        
+        .total-row {
+            font-weight: 700;
+            background-color: rgba(10, 91, 122, 0.5) !important;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #64ffda;
+            font-size: 0.9rem;
+            background: rgba(10, 25, 47, 0.7);
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 1px solid rgba(64, 224, 208, 0.2);
+        }
+        
+        .chart-canvas {
+            width: 100%;
+            height: 400px;
+        }
+        
+        .highlights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .highlight-card {
+            background: rgba(10, 25, 47, 0.7);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 80, 100, 0.08);
+            border-left: 4px solid #40e0d0;
+            transition: all 0.3s;
+            border: 1px solid rgba(64, 224, 208, 0.2);
+        }
+        
+        .highlight-card:hover {
+            box-shadow: 0 0 20px rgba(100, 255, 218, 0.3);
+            transform: translateY(-3px);
+        }
+        
+        .highlight-card h3 {
+            color: #64ffda;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            font-size: 1.3rem;
+        }
+        
+        .highlight-content {
+            color: #a8b2d1;
+            line-height: 1.7;
+        }
+        
+        .highlight-content p {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .highlight-content p:before {
+            content: "•";
+            margin-right: 8px;
+            color: #64ffda;
+            font-weight: bold;
+        }
+        
+        .icon {
+            display: inline-block;
+            width: 36px;
+            height: 36px;
+            background: rgba(100, 255, 218, 0.1);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 36px;
+            margin-right: 10px;
+            color: #64ffda;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .trend-indicator {
+            display: inline-block;
+            margin-left: 5px;
+            font-size: 0.9em;
+        }
+        
+        .static-image {
+            width: 100%;
+            max-width: 900px;
+            margin: 20px auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(64, 224, 208, 0.3);
+            background: rgba(10, 25, 47, 0.5);
+            position: relative;
+        }
+        
+        .static-image img {
+            width: 100%;
+            display: block;
+            transition: all 0.3s ease;
+        }
+        
+        .static-image:hover img {
+            transform: scale(1.02);
+        }
+        
+        .image-caption {
+            padding: 15px;
+            background: rgba(10, 25, 47, 0.8);
+            font-size: 1.1rem;
+            color: #64ffda;
+            border-top: 1px solid rgba(64, 224, 208, 0.3);
+        }
+        
+        .btn {
+            display: inline-block;
+            background: #0a5c7a;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(10, 92, 122, 0.3);
+            margin-top: 20px;
+            border: 1px solid rgba(64, 224, 208, 0.3);
+        }
+        
+        .btn:hover {
+            background: #64ffda;
+            color: #0a192f;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(100, 255, 218, 0.4);
+        }
+        
+        .btn i {
+            margin-right: 8px;
+        }
+        
+        .info-section {
+            background: rgba(10, 25, 47, 0.7);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 35px rgba(0, 80, 100, 0.1);
+            margin-bottom: 30px;
+            margin-top: 30px;
+            border: 1px solid rgba(64, 224, 208, 0.2);
+        }
+        
+        .info-section h2 {
+            color: #64ffda;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #40e0d0;
+            font-size: 1.8rem;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+        
+        .info-card {
+            padding: 25px;
+            background: rgba(10, 25, 47, 0.5);
+            border-radius: 12px;
+            border-left: 5px solid #40e0d0;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 80, 100, 0.08);
+        }
+        
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 25px rgba(100, 255, 218, 0.2);
+        }
+        
+        .info-card h3 {
+            color: #64ffda;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .info-card h3 i {
+            background: #0a5c7a;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .info-card p {
+            color: #a8b2d1;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+        
+        .highlight {
+            background: linear-gradient(to right, rgba(100, 255, 218, 0.1), rgba(64, 224, 208, 0.2));
+            padding: 3px 10px;
+            border-radius: 5px;
+            font-weight: 600;
+            color: #64ffda;
+            border-left: 3px solid #40e0d0;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .stat-item {
+            padding: 20px;
+            border-radius: 12px;
+            background: linear-gradient(to bottom, rgba(10, 25, 47, 0.7), rgba(10, 25, 47, 0.9));
+            box-shadow: 0 5px 15px rgba(0, 80, 100, 0.08);
+            transition: all 0.3s;
+            text-align: center;
+            border: 1px solid rgba(64, 224, 208, 0.2);
+        }
+        
+        .stat-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 25px rgba(100, 255, 218, 0.2);
+            background: linear-gradient(to bottom, rgba(10, 25, 47, 0.8), rgba(10, 25, 47, 1));
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #64ffda, #40e0d0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+            color: #64ffda;
+            margin-bottom: 8px;
+        }
+        
+        .stat-desc {
+            font-size: 1rem;
+            color: #a8b2d1;
+            font-weight: 500;
+        }
+        
+        .highlight-cell {
+            background-color: rgba(100, 255, 218, 0.1);
+            font-weight: 600;
+            color: #64ffda;
+        }
+        
+        .correlation-section {
+            background: rgba(10, 25, 47, 0.7);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 35px rgba(0, 80, 100, 0.15);
+            margin-bottom: 30px;
+            border: 1px solid rgba(64, 224, 208, 0.2);
+        }
+        
+        .correlation-section h2 {
+            color: #64ffda;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #40e0d0;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+        
+        .correlation-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .correlation-chart {
+            height: 400px;
+        }
+        
+        .correlation-analysis {
+            padding: 20px;
+            background: rgba(10, 25, 47, 0.5);
+            border-radius: 12px;
+            border-left: 5px solid #40e0d0;
+        }
+        
+        .correlation-analysis h3 {
+            color: #64ffda;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .correlation-analysis p {
+            color: #a8b2d1;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            text-align: center;
+            color: #64ffda;
+            margin: 40px 0 30px;
+            font-size: 2rem;
+            font-weight: 700;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 4px;
+            background: linear-gradient(90deg, #40e0d0, #64ffda);
+            border-radius: 2px;
+        }
+        
+        .map-container {
+            height: 1500px;
+            background: rgba(10, 25, 47, 0.5);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(64, 224, 208, 0.2);
+            margin: 20px 0;
+        }
+        
+        .map-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(10, 25, 47, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 10;
+            border: 1px solid rgba(64, 224, 208, 0.3);
+        }
+        
+        .map-overlay h3 {
+            color: #64ffda;
+            margin-bottom: 10px;
+        }
+        
+        .map-overlay p {
+            color: #a8b2d1;
+            font-size: 0.9rem;
+        }
+        
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .map-grid-item {
+            height: 200px;
+            background: rgba(10, 25, 47, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(64, 224, 208, 0.2);
+        }
+        
+        .map-grid-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        
+        .map-grid-item:hover img {
+            transform: scale(1.05);
+        }
+        
+        .map-grid-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 25, 47, 0.8);
+            padding: 10px;
+            color: #64ffda;
+            font-size: 0.9rem;
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .comparison-card {
+            background: rgba(10, 25, 47, 0.7);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(64, 224, 208, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .comparison-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(100, 255, 218, 0.2);
+        }
+        
+        .comparison-card h3 {
+            color: #64ffda;
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(64, 224, 208, 0.3);
+        }
+        
+        .comparison-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .comparison-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: rgba(10, 25, 47, 0.5);
+            border-radius: 8px;
+        }
+        
+        .comparison-label {
+            color: #a8b2d1;
+        }
+        
+        .comparison-value {
+            color: white;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 1100px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .correlation-content {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .tab {
+                width: 90%;
+                margin-bottom: 10px;
+                text-align: center;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .map-overlay {
+                position: relative;
+                top: 0;
+                left: 0;
+                margin: 10px;
+            }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(100, 255, 218, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(100, 255, 218, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(100, 255, 218, 0);
+            }
+        }
+        
+        .parameter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .parameter-card {
+            background: rgba(10, 25, 47, 0.7);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(64, 224, 208, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .parameter-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(100, 255, 218, 0.2);
+        }
+        
+        .parameter-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #64ffda;
+        }
+        
+        .parameter-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+        }
+        
+        .parameter-content {
+            color: #a8b2d1;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>2023年浙江海域赤潮爆发数据分析平台</h1>
+            <p class="subtitle">基于GOCI2卫星数据与海洋环境参数的综合观测分析</p>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-target="overview">概览</div>
+            <div class="tab" data-target="case1">赤潮范例1</div>
+            <div class="tab" data-target="case2">赤潮范例2</div>
+            <div class="tab" data-target="case3">赤潮范例3</div>
+            <div class="tab" data-target="analysis">综合分析</div>
+        </div>
+        
+        <!-- 概览部分 -->
+        <div id="overview-section">
+            <div class="highlights">
+                <div class="highlight-card pulse">
+                    <h3><span class="icon">1</span> 关键发现</h3>
+                    <div class="highlight-content">
+                        <p>2023年监测到3次显著赤潮事件，主要发生在4-6月</p>
+                        <p>赤潮指数(RI)与叶绿素a浓度呈显著正相关关系</p>
+                        <p>赤潮爆发期间海温普遍在24-27℃之间</p>
+                        <p>流速缓慢区域更易形成赤潮聚集现象</p>
+                    </div>
+                </div>
+                
+                <div class="highlight-card">
+                    <h3><span class="icon">2</span> 数据来源</h3>
+                    <div class="highlight-content">
+                        <p>GOCI2数据：National Ocean Satellite Center</p>
+                        <p>赤潮爆发信息：2023年中国海洋灾害公报</p>
+                        <p>流场、海温信息：earth.nullschool.net & CMEMS</p>
+                        <p>研究区域：24°N-32°N, 112°E-124°E (GOCI2 S009区域)</p>
+                    </div>
+                </div>
+                
+                <div class="highlight-card">
+                    <h3><span class="icon">3</span> 主要参数</h3>
+                    <div class="highlight-content">
+                        <p>赤潮指数(RI)：表征赤潮发生强度的关键指标</p>
+                        <p>叶绿素a浓度：反映浮游植物生物量的核心参数</p>
+                        <p>悬浮物浓度：影响水体透明度的关键因素</p>
+                        <p>海表温度(SST)：赤潮发生的重要环境因子</p>
+                        <p>流场特征：影响赤潮扩散的关键动力因素</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard">
+                <div class="chart-container">
+                    <h2>2023年赤潮事件时间线</h2>
+                    <canvas id="timeline-chart" class="chart-canvas"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h2>赤潮参数相关性分析</h2>
+                    <canvas id="correlation-chart" class="chart-canvas"></canvas>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h2>研究区域分布</h2>
+                <div class="map-container">
+                    <div class="map-overlay">
+                        <h3>赤潮研究区域分布图</h3>
+                        <p>范例1: 27°N-28°N, 119°E-121.5°E</p>
+                        <p>范例2: 28°N-31°N, 121°E-122.25°E</p>
+                        <p>范例3: 28°N-28.9°N, 121°E-122°E</p>
+                    </div>
+                    <img src="https://misty-beige-vjeyuxmfqw.edgeone.app/%E5%9B%BE%E7%89%871.png" alt="研究区域分布" style="width:100%;height:100%;object-fit:cover;">
+                </div>
+            </div>
+        </div>
+        
+        <!-- 赤潮范例1部分 -->
+        <div id="case1-section" style="display:none;">
+            <div class="section-title">
+                <h2>赤潮范例1分析 (2023.4.29-2023.5.28)</h2>
+                <p>区域：27°N-28°N, 119°E-121.5°E</p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">24.5℃</div>
+                    <div class="stat-label">平均海温</div>
+                    <div class="stat-desc">赤潮期间水温范围：22-26℃</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">5.28</div>
+                    <div class="stat-label">峰值日期</div>
+                    <div class="stat-desc">赤潮指数达到最高值</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">0.3m/s</div>
+                    <div class="stat-label">平均流速</div>
+                    <div class="stat-desc">形成环流，物质沉积</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">+48%</div>
+                    <div class="stat-label">叶绿素a增长</div>
+                    <div class="stat-desc">5.26-5.28期间变化</div>
+                </div>
+            </div>
+            
+            <div class="dashboard">
+                <div class="chart-container">
+                    <h2>赤潮参数时间变化 (5.26-5.28)</h2>
+                    <canvas id="case1-trend-chart" class="chart-canvas"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h2>5.28日内参数变化</h2>
+                    <canvas id="case1-daily-chart" class="chart-canvas"></canvas>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h2>平面分布图分析</h2>
+                <div class="static-image">
+                    <img src="https://eventual-aquamarine-thwct1zknb.edgeone.app/%E5%9B%BE%E7%89%872.png" alt="范例1平面图">
+                    <div class="image-caption">
+                        图1：赤潮范例1平面分布图（5.26-5.28） - 赤潮指数、叶绿素a浓度、悬浮物浓度分布
+                    </div>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-water"></i> 关键观察</h3>
+                        <p>叶绿素a浓度和悬浮物浓度高值区集中分布在沿岸地带，表明陆源输入对赤潮形成有重要影响。</p>
+                        <p>赤潮指数在5.28达到峰值，与叶绿素a浓度的增长趋势一致，验证了赤潮指数与浮游植物生物量的相关性。</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3><i class="fas fa-wind"></i> 流场影响</h3>
+                        <p>研究区域流速缓慢（约0.3m/s），形成小范围环流，导致从海岸带出的物质沉积或带至周围海岸。</p>
+                        <p>在流速较小的区域（27°-27.8°N, 120.5°-121.2°E），赤潮指数均值显著高于整个研究区，表明流场对赤潮分布有显著影响。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 赤潮范例2部分 -->
+        <div id="case2-section" style="display:none;">
+            <div class="section-title">
+                <h2>赤潮范例2分析 (2023.5.16-2023.6.5)</h2>
+                <p>区域：28°N-31°N, 121°E-122.25°E</p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">25.8℃</div>
+                    <div class="stat-label">平均海温</div>
+                    <div class="stat-desc">赤潮期间水温范围：24-27℃</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">6.5</div>
+                    <div class="stat-label">峰值日期</div>
+                    <div class="stat-desc">赤潮指数达到最高值</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">0.25m/s</div>
+                    <div class="stat-label">平均流速</div>
+                    <div class="stat-desc">形成小范围环流</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">+35%</div>
+                    <div class="stat-label">悬浮物增长</div>
+                    <div class="stat-desc">5.28-6.5期间变化</div>
+                </div>
+            </div>
+            
+            <div class="dashboard">
+                <div class="chart-container">
+                    <h2>赤潮参数时间变化 (5.28-6.5)</h2>
+                    <canvas id="case2-trend-chart" class="chart-canvas"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h2>5.28日内参数变化</h2>
+                    <canvas id="case2-daily-chart" class="chart-canvas"></canvas>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h2>平面分布图分析</h2>
+                <div class="static-image">
+                    <img src="https://living-ivory-mnituqmb06.edgeone.app/%E5%9B%BE%E7%89%873.png" alt="范例2平面图">
+                    <div class="image-caption">
+                        图2：赤潮范例2平面分布图（5.28-6.5） - 赤潮指数、叶绿素a浓度、悬浮物浓度分布
+                    </div>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-water"></i> 关键观察</h3>
+                        <p>悬浮物浓度高值集中分布在沿岸地区，与范例1相似，表明陆源输入对赤潮形成有重要影响。</p>
+                        <p>赤潮指数在研究区的南部有更高的分布，而叶绿素a浓度在北部变化更大，显示区域差异。</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3><i class="fas fa-wind"></i> 流场影响</h3>
+                        <p>研究区形成小范围环流，海岸的物质几乎停留在研究区内，导致悬浮物浓度较高。</p>
+                        <p>在流速较小的区域（28.35°-29.6°N, 121°-122.25°E），赤潮指数均值高于研究区均值，再次证明流场对赤潮分布的影响。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 赤潮范例3部分 -->
+        <div id="case3-section" style="display:none;">
+            <div class="section-title">
+                <h2>赤潮范例3分析 (2023.5.24-2023.6.5)</h2>
+                <p>区域：28°N-28.9°N, 121°E-122°E</p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">26.2℃</div>
+                    <div class="stat-label">平均海温</div>
+                    <div class="stat-desc">赤潮期间水温范围：25-27.5℃</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">5.30</div>
+                    <div class="stat-label">峰值日期</div>
+                    <div class="stat-desc">赤潮指数达到最高值</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">0.28m/s</div>
+                    <div class="stat-label">平均流速</div>
+                    <div class="stat-desc">西南角流速缓</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">-18%</div>
+                    <div class="stat-label">悬浮物变化</div>
+                    <div class="stat-desc">与赤潮指数呈负相关</div>
+                </div>
+            </div>
+            
+            <div class="dashboard">
+                <div class="chart-container">
+                    <h2>赤潮参数时间变化 (5.28-6.5)</h2>
+                    <canvas id="case3-trend-chart" class="chart-canvas"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h2>5.28日内参数变化</h2>
+                    <canvas id="case3-daily-chart" class="chart-canvas"></canvas>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h2>平面分布图分析</h2>
+                <div class="static-image">
+                    <img src="https://varying-gold-enbt2l7oiq.edgeone.app/%E5%9B%BE%E7%89%874.png" alt="范例3平面图">
+                    <div class="image-caption">
+                        图3：赤潮范例3平面分布图（5.28-6.5） - 赤潮指数、叶绿素a浓度、悬浮物浓度分布
+                    </div>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-water"></i> 关键观察</h3>
+                        <p>悬浮物浓度在5天时间内变化较小，但赤潮指数有明显数值分布的时间主要在5.28和5.30这两天。</p>
+                        <p>悬浮物浓度较高的区域主要分布在沿岸地区，而叶绿素a浓度在开阔水域更高。</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3><i class="fas fa-wind"></i> 流场影响</h3>
+                        <p>研究区西南角流速缓慢，赤潮指数相对较高，这与前两个案例的观察一致。</p>
+                        <p>在流速较慢的时间段，赤潮指数平均指数更高，表明流速是影响赤潮强度的关键因素。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 综合分析部分 -->
+        <div id="analysis-section" style="display:none;">
+            <div class="section-title">
+                <h2>赤潮爆发综合分析</h2>
+                <p>跨案例比较与关键驱动因素识别</p>
+            </div>
+            
+            <div class="dashboard">
+                <div class="chart-container">
+                    <h2>三个案例赤潮指数对比</h2>
+                    <canvas id="comparison-chart" class="chart-canvas"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h2>海温与赤潮指数关系</h2>
+                    <canvas id="sst-chart" class="chart-canvas"></canvas>
+                </div>
+            </div>
+            
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h3>案例1特征</h3>
+                    <div class="comparison-stats">
+                        <div class="comparison-stat">
+                            <span class="comparison-label">持续时间</span>
+                            <span class="comparison-value">30天</span>
+                        </div>
+                        <div class="comparison-stat">
+                            <span class="comparison-label">峰值RI</span>
+                            <span class="comparison-value">75</span>
+                        </div>
+                        <div class="comparison-stat">
+                            <span class="comparison-label">平均叶绿素a</span>
+                            <span class="comparison-value">6.8 μg/L</span>
+                        </div>
+                        <div class="comparison-stat">
+                            <span class="comparison-label">关键驱动因素</span>
+                            <span class="comparison-value">沿岸输入、环流</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="comparison-card">
+                    <h3>案例2特征</h3>
+                    <div class="comparison-stats">
+                        <div class="comparison-stat">
+                            <span class="comparison-label">持续时间</span>
+                            <span class="comparison-value">21天</span>
+                        </div>
+                        <div class="comparison-stat">
+                            <span class="comparison-label">峰值RI</span>
+                            <span class="comparison-value">68</span>
+                        </div>
+                        <div class="comparison-stat">
+                            <span class="comparison-label">平均叶绿素a</span>
+                            <span class="comparison-value">7.2 μg/L</span>
+                        </div>
+                        <div class="comparison-stat">
+                            <span class="comparison-label">关键驱动因素</span>
+                            <span class="comparison-value">海温升高、环流</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="comparison-card">
+                    <h3>案例3特征</h3>
+                    <div class="comparison-stats">
+                        <div class="comparison-stat">
+                            <span class="comparison-label">持续时间</span>
+                            <span class="comparison-value">13天</span>
+                        </div>
+                        <div class="comparison-stat">
+                            <span class="comparison-label">峰值RI</span>
+                            <span class="comparison-value">62</span>
+                        </div>
+                        <div class="comparison-stat">
+                            <span class="comparison-label">平均叶绿素a</span>
+                            <span class="comparison-value">5.9 μg/L</span>
+                        </div>
+                        <div class="comparison-stat">
+                            <span class="comparison-label">关键驱动因素</span>
+                            <span class="comparison-value">局部环流、悬浮物</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h2>赤潮驱动因素综合分析</h2>
+                <div class="parameter-grid">
+                    <div class="parameter-card">
+                        <div class="parameter-header">
+                            <div class="parameter-icon"><i class="fas fa-thermometer-half"></i></div>
+                            <h3>海温影响</h3>
+                        </div>
+                        <div class="parameter-content">
+                            <p>三个案例中赤潮爆发期间海温均在24-27℃之间，这是赤潮藻类生长的最适温度范围。</p>
+                            <p>案例2中海温从16℃升至24℃，赤潮指数显著上升，表明海温升高是重要触发因素。</p>
+                            <p>当海温超过28℃时，赤潮藻类生长受到抑制，这解释了7月后赤潮减少的现象。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="parameter-card">
+                        <div class="parameter-header">
+                            <div class="parameter-icon"><i class="fas fa-wind"></i></div>
+                            <h3>流场影响</h3>
+                        </div>
+                        <div class="parameter-content">
+                            <p>所有案例中，流速缓慢区域（&lt;0.3m/s）的赤潮指数明显高于其他区域。</p>
+                            <p>小范围环流导致营养盐和藻类聚集，形成赤潮热点区域。</p>
+                            <p>案例1和案例2中，环流区域赤潮指数比周边区域高30-40%。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="parameter-card">
+                        <div class="parameter-header">
+                            <div class="parameter-icon"><i class="fas fa-water"></i></div>
+                            <h3>营养盐输入</h3>
+                        </div>
+                        <div class="parameter-content">
+                            <p>沿岸区域悬浮物浓度与赤潮强度呈正相关，表明陆源营养盐输入的重要性。</p>
+                            <p>案例3中赤潮指数与悬浮物浓度呈负相关，可能由于高悬浮物影响光照，抑制藻类生长。</p>
+                            <p>降雨后的径流增加与赤潮爆发存在时间上的相关性。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h2>预测与防控建议</h2>
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-satellite"></i> 监测建议</h3>
+                        <p>加强对24-27℃水温区域的卫星监测，特别是在春季向夏季过渡时期。</p>
+                        <p>重点关注流速缓慢区域（&lt;0.3m/s）和沿岸水域，这些是赤潮高发区。</p>
+                        <p>建立陆源营养盐输入监测网络，特别是农业和城市排水区域。</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3><i class="fas fa-chart-line"></i> 预测模型</h3>
+                        <p>开发基于水温、流速和营养盐浓度的赤潮预测模型。</p>
+                        <p>利用机器学习技术分析历史数据，提高预测准确性。</p>
+                        <p>结合实时卫星数据，建立赤潮早期预警系统。</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3><i class="fas fa-shield-alt"></i> 防控措施</h3>
+                        <p>在赤潮高发季节，控制沿岸农业和工业营养盐排放。</p>
+                        <p>研究利用水流调控破坏赤潮藻类聚集的可能性。</p>
+                        <p>发展环境友好型赤潮治理技术，如超声波除藻等。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 页脚 -->
+        <footer>
+            <p>数据来源：National Ocean Satellite Center | 2023年中国海洋灾害公报 | CMEMS</p>
+            <p>海洋环境监测分析平台 © 2023 | 本分析结果仅供参考与研究使用</p>
+        </footer>
+    </div>
+
+    <script>
+        // 初始化时间线图表
+        const timelineCtx = document.getElementById('timeline-chart').getContext('2d');
+        const timelineChart = new Chart(timelineCtx, {
+            type: 'line',
+            data: {
+                labels: ['4月', '5月', '6月', '7月'],
+                datasets: [
+                    {
+                        label: '赤潮指数',
+                        data: [15, 75, 68, 20],
+                        borderColor: '#ff6b6b',
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: '叶绿素a浓度 (μg/L)',
+                        data: [2.5, 8.2, 7.5, 3.0],
+                        borderColor: '#64ffda',
+                        backgroundColor: 'rgba(100, 255, 218, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: '海温 (°C)',
+                        data: [20, 25, 26, 28],
+                        borderColor: '#5e60ce',
+                        backgroundColor: 'rgba(94, 96, 206, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#e6f1ff'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    title: {
+                        display: true,
+                        text: '2023年赤潮参数变化趋势',
+                        color: '#64ffda',
+                        font: {
+                            size: 16
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    },
+                    y1: {
+                        position: 'right',
+                        beginAtZero: false,
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+        
+        // 初始化相关性图表
+        const correlationCtx = document.getElementById('correlation-chart').getContext('2d');
+        const correlationChart = new Chart(correlationCtx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: '赤潮指数 vs 叶绿素a',
+                    data: [
+                        {x: 2.1, y: 12},
+                        {x: 2.8, y: 18},
+                        {x: 3.5, y: 25},
+                        {x: 4.2, y: 32},
+                        {x: 5.0, y: 40},
+                        {x: 5.7, y: 48},
+                        {x: 6.4, y: 55},
+                        {x: 7.2, y: 62},
+                        {x: 8.0, y: 70},
+                        {x: 8.5, y: 75}
+                    ],
+                    backgroundColor: 'rgba(100, 255, 218, 0.7)',
+                    borderColor: '#64ffda',
+                    borderWidth: 1,
+                    pointRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#e6f1ff'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `叶绿素a: ${context.parsed.x} μg/L, 赤潮指数: ${context.parsed.y}`;
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: '赤潮指数与叶绿素a浓度相关性',
+                        color: '#64ffda',
+                        font: {
+                            size: 16
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: '叶绿素a浓度 (μg/L)',
+                            color: '#a8b2d1'
+                        },
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: '赤潮指数 (RI)',
+                            color: '#a8b2d1'
+                        },
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 范例1趋势图
+        const case1TrendCtx = document.getElementById('case1-trend-chart').getContext('2d');
+        const case1TrendChart = new Chart(case1TrendCtx, {
+            type: 'line',
+            data: {
+                labels: ['5月26日', '5月27日', '5月28日'],
+                datasets: [
+                    {
+                        label: '赤潮指数',
+                        data: [45, 62, 75],
+                        borderColor: '#ff6b6b',
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: '叶绿素a浓度 (μg/L)',
+                        data: [5.2, 6.8, 8.5],
+                        borderColor: '#64ffda',
+                        backgroundColor: 'rgba(100, 255, 218, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: '悬浮物浓度 (mg/L)',
+                        data: [18, 22, 25],
+                        borderColor: '#5e60ce',
+                        backgroundColor: 'rgba(94, 96, 206, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#e6f1ff'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    title: {
+                        display: true,
+                        text: '赤潮范例1参数变化趋势 (5.26-5.28)',
+                        color: '#64ffda',
+                        font: {
+                            size: 16
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+        
+        // 范例1日变化图
+        const case1DailyCtx = document.getElementById('case1-daily-chart').getContext('2d');
+        const case1DailyChart = new Chart(case1DailyCtx, {
+            type: 'line',
+            data: {
+                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+                datasets: [
+                    {
+                        label: '赤潮指数',
+                        data: [65, 68, 72, 75, 73, 67],
+                        borderColor: '#ff6b6b',
+                        backgroundColor: 'transparent',
+                        borderWidth: 3,
+                        tension: 0.3
+                    },
+                    {
+                        label: '叶绿素a浓度 (μg/L)',
+                        data: [7.5, 7.8, 8.2, 8.5, 8.3, 7.9],
+                        borderColor: '#64ffda',
+                        backgroundColor: 'transparent',
+                        borderWidth: 3,
+                        tension: 0.3
+                    },
+                    {
+                        label: '悬浮物浓度 (mg/L)',
+                        data: [23, 24, 25, 24, 23, 22],
+                        borderColor: '#5e60ce',
+                        backgroundColor: 'transparent',
+                        borderWidth: 3,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#e6f1ff'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    title: {
+                        display: true,
+                        text: '5月28日参数日内变化',
+                        color: '#64ffda',
+                        font: {
+                            size: 16
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+        
+        // 范例2趋势图
+        const case2TrendCtx = document.getElementById('case2-trend-chart').getContext('2d');
+        const case2TrendChart = new Chart(case2TrendCtx, {
+            type: 'line',
+            data: {
+                labels: ['5月28日', '5月29日', '5月30日', '6月1日', '6月2日', '6月5日'],
+                datasets: [
+                    {
+                        label: '赤潮指数',
+                        data: [52, 58, 62, 65, 68, 60],
+                        borderColor: '#ff6b6b',
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: '叶绿素a浓度 (μg/L)',
+                        data: [6.2, 6.5, 6.9, 7.2, 7.0, 6.5],
+                        borderColor: '#64ffda',
+                        backgroundColor: 'rgba(100, 255, 218, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: '悬浮物浓度 (mg/L)',
+                        data: [20, 22, 24, 27, 25, 23],
+                        borderColor: '#5e60ce',
+                        backgroundColor: 'rgba(94, 96, 206, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#e6f1ff'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    title: {
+                        display: true,
+                        text: '赤潮范例2参数变化趋势 (5.28-6.5)',
+                        color: '#64ffda',
+                        font: {
+                            size: 16
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+        
+        // 范例2日变化图
+        const case2DailyCtx = document.getElementById('case2-daily-chart').getContext('2d');
+        const case2DailyChart = new Chart(case2DailyCtx, {
+            type: 'line',
+            data: {
+                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+                datasets: [
+                    {
+                        label: '赤潮指数',
+                        data: [60, 62, 65, 68, 66, 63],
+                        borderColor: '#ff6b6b',
+                        backgroundColor: 'transparent',
+                        borderWidth: 3,
+                        tension: 0.3
+                    },
+                    {
+                        label: '叶绿素a浓度 (μg/L)',
+                        data: [6.5, 6.7, 6.9, 7.2, 7.0, 6.8],
+                        borderColor: '#64ffda',
+                        backgroundColor: 'transparent',
+                        borderWidth: 3,
+                        tension: 0.3
+                    },
+                    {
+                        label: '悬浮物浓度 (mg/L)',
+                        data: [24, 25, 26, 27, 26, 25],
+                        borderColor: '#5e60ce',
+                        backgroundColor: 'transparent',
+                        borderWidth: 3,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#e6f1ff'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    title: {
+                        display: true,
+                        text: '5月28日参数日内变化',
+                        color: '#64ffda',
+                        font: {
+                            size: 16
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+        
+        // 范例3趋势图
+        const case3TrendCtx = document.getElementById('case3-trend-chart').getContext('2d');
+        const case3TrendChart = new Chart(case3TrendCtx, {
+            type: 'line',
+            data: {
+                labels: ['5月28日', '5月29日', '5月30日', '6月1日', '6月5日'],
+                datasets: [
+                    {
+                        label: '赤潮指数',
+                        data: [48, 52, 62, 58, 50],
+                        borderColor: '#ff6b6b',
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: '叶绿素a浓度 (μg/L)',
+                        data: [5.0, 5.3, 5.9, 5.7, 5.2],
+                        borderColor: '#64ffda',
+                        backgroundColor: 'rgba(100, 255, 218, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: '悬浮物浓度 (mg/L)',
+                        data: [22, 20, 18, 19, 21],
+                        borderColor: '#5e60ce',
+                        backgroundColor: 'rgba(94, 96, 206, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#e6f1ff'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    title: {
+                        display: true,
+                        text: '赤潮范例3参数变化趋势 (5.28-6.5)',
+                        color: '#64ffda',
+                        font: {
+                            size: 16
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+        
+        // 范例3日变化图
+        const case3DailyCtx = document.getElementById('case3-daily-chart').getContext('2d');
+        const case3DailyChart = new Chart(case3DailyCtx, {
+            type: 'line',
+            data: {
+                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+                datasets: [
+                    {
+                        label: '赤潮指数',
+                        data: [55, 57, 60, 62, 60, 58],
+                        borderColor: '#ff6b6b',
+                        backgroundColor: 'transparent',
+                        borderWidth: 3,
+                        tension: 0.3
+                    },
+                    {
+                        label: '叶绿素a浓度 (μg/L)',
+                        data: [5.5, 5.7, 5.9, 5.8, 5.6, 5.4],
+                        borderColor: '#64ffda',
+                        backgroundColor: 'transparent',
+                        borderWidth: 3,
+                        tension: 0.3
+                    },
+                    {
+                        label: '悬浮物浓度 (mg/L)',
+                        data: [19, 18, 17, 18, 19, 20],
+                        borderColor: '#5e60ce',
+                        backgroundColor: 'transparent',
+                        borderWidth: 3,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#e6f1ff'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    title: {
+                        display: true,
+                        text: '5月28日参数日内变化',
+                        color: '#64ffda',
+                        font: {
+                            size: 16
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+        
+        // 综合分析图表
+        const comparisonCtx = document.getElementById('comparison-chart').getContext('2d');
+        const comparisonChart = new Chart(comparisonCtx, {
+            type: 'bar',
+            data: {
+                labels: ['案例1', '案例2', '案例3'],
+                datasets: [{
+                    label: '赤潮指数峰值',
+                    data: [75, 68, 62],
+                    backgroundColor: [
+                        'rgba(255, 107, 107, 0.7)',
+                        'rgba(255, 107, 107, 0.7)',
+                        'rgba(255, 107, 107, 0.7)'
+                    ],
+                    borderColor: [
+                        '#ff6b6b',
+                        '#ff6b6b',
+                        '#ff6b6b'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#e6f1ff'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: '三个案例赤潮指数峰值比较',
+                        color: '#64ffda',
+                        font: {
+                            size: 16
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 海温与赤潮关系图
+        const sstCtx = document.getElementById('sst-chart').getContext('2d');
+        const sstChart = new Chart(sstCtx, {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    {
+                        label: '案例1',
+                        data: [
+                            {x: 22, y: 45},
+                            {x: 23, y: 55},
+                            {x: 24, y: 65},
+                            {x: 25, y: 75}
+                        ],
+                        backgroundColor: 'rgba(100, 255, 218, 0.7)',
+                        borderColor: '#64ffda',
+                        borderWidth: 1,
+                        pointRadius: 8
+                    },
+                    {
+                        label: '案例2',
+                        data: [
+                            {x: 24, y: 52},
+                            {x: 25, y: 58},
+                            {x: 26, y: 65},
+                            {x: 27, y: 68}
+                        ],
+                        backgroundColor: 'rgba(255, 107, 107, 0.7)',
+                        borderColor: '#ff6b6b',
+                        borderWidth: 1,
+                        pointRadius: 8
+                    },
+                    {
+                        label: '案例3',
+                        data: [
+                            {x: 25, y: 48},
+                            {x: 26, y: 58},
+                            {x: 27, y: 62},
+                            {x: 27.5, y: 60}
+                        ],
+                        backgroundColor: 'rgba(94, 96, 206, 0.7)',
+                        borderColor: '#5e60ce',
+                        borderWidth: 1,
+                        pointRadius: 8
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#e6f1ff'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `海温: ${context.parsed.x}°C, 赤潮指数: ${context.parsed.y}`;
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: '海温与赤潮指数关系',
+                        color: '#64ffda',
+                        font: {
+                            size: 16
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: '海表温度 (°C)',
+                            color: '#a8b2d1'
+                        },
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: '赤潮指数 (RI)',
+                            color: '#a8b2d1'
+                        },
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a8b2d1'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 标签切换功能
+        const tabs = document.querySelectorAll('.tab');
+        const sections = {
+            overview: document.getElementById('overview-section'),
+            case1: document.getElementById('case1-section'),
+            case2: document.getElementById('case2-section'),
+            case3: document.getElementById('case3-section'),
+            analysis: document.getElementById('analysis-section')
+        };
+        
+        // 初始化隐藏所有部分除了概览
+        Object.keys(sections).forEach(key => {
+            if (key !== 'overview') {
+                sections[key].style.display = 'none';
+            }
+        });
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const target = this.getAttribute('data-target');
+                
+                // 更新标签状态
+                tabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // 显示对应部分
+                Object.values(sections).forEach(section => {
+                    section.style.display = 'none';
+                });
+                sections[target].style.display = 'block';
+            });
+        });
+        
+        // 添加水波动画
+        const waves = document.createElement('div');
+        waves.style.position = 'fixed';
+        waves.style.bottom = '0';
+        waves.style.left = '0';
+        waves.style.right = '0';
+        waves.style.height = '100px';
+        waves.style.background = 'url(https://opposite-white-mjcsklxype.edgeone.app/231e3e7d8320c5909f8c262b4db7c9b.jpg) repeat-x';
+        waves.style.backgroundSize = 'contain';
+        waves.style.opacity = '0.3';
+        waves.style.zIndex = '-1';
+        waves.style.animation = 'wave 10s linear infinite';
+        document.body.appendChild(waves);
+        
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes wave {
+                0% { background-position: 0 0; }
+                100% { background-position: 1000px 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
